@@ -2,6 +2,15 @@ import requests
 import json
 
 def authenticate():
+    """
+    Authentifiziert den Benutzer über die API und erhält einen API-Token.
+
+    Sendet eine Anfrage an die API, um den Benutzer zu authentifizieren und erhält einen API-Token
+    zur weiteren Verwendung.
+
+    Returns:
+        str: Der erhaltene API-Token.
+    """
     url = "https://192.168.10.61/api/jsonrpc"
 
     payload = json.dumps({

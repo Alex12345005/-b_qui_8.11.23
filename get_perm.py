@@ -2,6 +2,17 @@ import requests
 import json
 
 def getpermissions(api_token):
+    """
+    Ruft die Benutzerberechtigungen über die API ab.
+
+    Sendet eine Anfrage an die API, um die Berechtigungen des Benutzers abzurufen.
+
+    Args:
+        api_token (str): Der API-Token, der zur Authentifizierung verwendet wird.
+
+    Returns:
+        str: Die API-Antwort als Text.
+    """
     url = "https://192.168.10.61/api/jsonrpc"
 
     payload = json.dumps({
