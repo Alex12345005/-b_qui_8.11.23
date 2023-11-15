@@ -1,35 +1,43 @@
 import requests
 import json
+from requests.exceptions import ConnectTimeout
 
-def plc_program_read(api_token, var, mode="simple"):
-    """
-    Liest eine Variable aus einer CPU mit der Methode PlcProgram.Read.
+MAX_RETRIES = 3
 
-    Args:
-        api_token (str): Der API-Token, der zur Authentifizierung verwendet wird.
-        var (str): Der Name der zu lesenden Variable.
-        mode (str, optional): Der Modus, der das Antwortformat festlegt. Standardmäßig ist "simple".
+def plc_program_read(url: str, session: requests.Session, token: str, variables):
+    requests_list = []
 
-    Returns:
-        str: Die API-Antwort als Text.
-    """
-    url = "https://192.168.10.61/api/jsonrpc"
+    for i, var in enumerate(variables, start=1):
+        requests_list.append({
+            "id": i,
+            "jsonrpc": "2.0",
+            "method": "PlcProgram.Read",
+            "params": {
+                "var": f"\"dVisu\".{var['name']}"
+            }
+        })
 
-    payload = json.dumps({
-        "id": 0,
-        "jsonrpc": "2.0",
-        "method": "PlcProgram.Read",
-        "params": {
-            "var": var,
-            "mode": mode
-        }
-    })
+    payload = json.dumps(requests_list)
+    
+    # Define headers here
     headers = {
         'Content-Type': 'application/json',
         'Content-Length': str(len(payload)),
-        'Host': '192.168.10.61',
-        'X-Auth-Token': api_token
+        'Host': '192.162.10.61',
+        'User-Agent': 'PostmanRuntime/7.33.0',
+        'X-Auth-Token': token
     }
 
-    response = requests.post(url, headers=headers, data=payload, verify=False)
-    return response.text
+    try:
+        response = session.post(url, headers=headers, data=payload, verify=False)
+        response_json = response.json()
+
+        results = {}
+        for var, res in zip(variables, response_json):
+            results[var['name']] = res['result']
+
+        return results
+    except requests.exceptions.ConnectTimeout as e:
+        print(f"Connection timeout: {e}")
+        # Handle the timeout exception, e.g., retry or raise an error
+        raise
